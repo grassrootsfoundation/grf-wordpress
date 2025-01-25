@@ -1,0 +1,8 @@
+
+/upgrade
+/upgrade-temp-backup
+/upgrade-temp-backup
+/debug.log
+/index.php
+/themes/twenty*
+.DS_Store
