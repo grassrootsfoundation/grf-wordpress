@@ -1,0 +1,35 @@
+{
+  "apiVersion": 2,
+  "name": "theme/hero-block",
+  "title": "Hero Block",
+  "category": "layout",
+  "icon": "welcome-view-site",
+  "keywords": ["hero", "banner"],
+  "description": "A custom hero block with a title, description, and button.",
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "source": "html",
+      "selector": "h1"
+    },
+    "description": {
+      "type": "string",
+      "source": "html",
+      "selector": "p"
+    },
+    "buttonText": {
+      "type": "string",
+      "default": "Learn More"
+    },
+    "buttonUrl": {
+      "type": "string",
+      "default": "#"
+    }
+  },
+  "editorScript": "file:./index.js",
+  "style": "file:./style.css",
+  "editorStyle": "file:./editor.css"
+}
