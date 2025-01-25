@@ -3,7 +3,7 @@ name: Deploy WordPress to Azure
 on:
   push:
     branches:
-      - main  # Trigger deployment on pushes to the main branch
+      - main
 
 jobs:
   deploy:
@@ -13,8 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C46546F67F6940B0AA3DB14686DC315C }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D629196DC5414E5496B6C8025AB6637E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_295EE27DC87C4B01920BD92AC3FEBA4C }}
+
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'grf-wordpress'  # Replace with your App Service name
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8A94DA96F2E8423EA3CDEFC003B3185A }}
