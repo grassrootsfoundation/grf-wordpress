@@ -2,7 +2,7 @@
   "apiVersion": 2,
   "name": "theme/hero-block",
   "title": "Hero Block",
-  "category": "layout",
+  "category": "embeds",
   "icon": "welcome-view-site",
   "keywords": ["hero", "banner"],
   "description": "A custom hero block with a title, description, and button.",

@@ -18,6 +18,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
       - name: Run Database Sync Script
         env:
           LOCAL_DB_NAME: ${{ secrets.LOCAL_DB_NAME }}
@@ -30,4 +35,10 @@ jobs:
           AZURE_SSH_USER: ${{ secrets.AZURE_SSH_USER }}
           AZURE_SSH_HOST: ${{ secrets.AZURE_SSH_HOST }}
           REMOTE_WP_PATH: ${{ secrets.REMOTE_WP_PATH }}
-        run: bash scripts/sync-db.sh
+        run: |
+          set -e  # Exit if any command fails
+          set -x  # Debug mode to show all commands
+          bash scripts/sync-db.sh
+
+      - name: Verify Sync Completion
+        run: echo "Database sync job completed successfully!"

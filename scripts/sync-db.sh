@@ -1,41 +1,54 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status
 
-# Define variables
-LOCAL_DB_NAME="local"
-LOCAL_DB_USER="root"
-LOCAL_DB_PASS="root"
-LOCAL_DB_HOST="127.0.0.1"
-
-AZURE_DB_HOST="grfheadles-c5b4b4cacb-privatelink.mysql.database.azure.com"
-AZURE_DB_NAME="grfheadles-c5b4b4cacb-privatelink"
-AZURE_DB_USER="bsraawezfi"
-AZURE_DB_PASS="csBCtGbt0dX6wmh7KNchPlDfNSprw3grvHHf9WpNSfS93Hgtg8g3LPgitfxz"
-AZURE_SSH_USER="kudu_ssh_user"
-AZURE_SSH_HOST="https://grf-headless-fbeeesahfucac3a9.westus2-01.azurewebsites.net"
-REMOTE_WP_PATH="waws-prod-mwh-125.ftp.azurewebsites.windows.net/site/wwwroot"
-
-DUMP_FILE="/tmp/db-sync.sql"
-LOCAL_DUMP_FILE="db-sync.sql"
+# Load environment variables (optional for local testing)
+if [ -f .env ]; then
+  export $(cat .env | xargs)
+fi
 
 # Step 1: Export the local database
 echo "Exporting local database..."
-mysqldump -h $LOCAL_DB_HOST -u $LOCAL_DB_USER -p$LOCAL_DB_PASS $LOCAL_DB_NAME > $DUMP_FILE
+mysqldump -h "$LOCAL_DB_HOST" -u "$LOCAL_DB_USER" -p"$LOCAL_DB_PASS" "$LOCAL_DB_NAME" > "$DUMP_FILE"
+if [[ $? -ne 0 ]]; then
+  echo "Failed to export local database."
+  exit 1
+fi
 
-# Step 2: Transfer the dump file to the Azure server
+# Step 2: Transfer the dump file to the Azure server (using Kudu API)
 echo "Transferring dump file to Azure server..."
-scp $DUMP_FILE $AZURE_SSH_USER@$AZURE_SSH_HOST:$REMOTE_WP_PATH
+curl -X PUT \
+     -u "$AZURE_SSH_USER:$AZURE_SSH_PASS" \
+     --data-binary @"$DUMP_FILE" \
+     "https://$AZURE_SSH_HOST/api/vfs/site/wwwroot/db-sync.sql"
+if [[ $? -ne 0 ]]; then
+  echo "Failed to transfer dump file to Azure server."
+  exit 1
+fi
 
 # Step 3: Import the database on the Azure server
 echo "Importing database on Azure server..."
-ssh $AZURE_SSH_USER@$AZURE_SSH_HOST "mysql -h $AZURE_DB_HOST -u $AZURE_DB_USER -p$AZURE_DB_PASS $AZURE_DB_NAME < $REMOTE_WP_PATH/$DUMP_FILE"
+ssh "$AZURE_SSH_USER@$AZURE_SSH_HOST" "mysql -h $AZURE_DB_HOST -u $AZURE_DB_USER -p'$AZURE_DB_PASS' $AZURE_DB_NAME < /site/wwwroot/db-sync.sql"
+if [[ $? -ne 0 ]]; then
+  echo "Failed to import database on Azure server."
+  exit 1
+fi
 
-# Step 4: Perform search-replace to update URLs
+# Step 4: Perform search-replace to update URLs (using WP-CLI)
 echo "Updating URLs in the database..."
-ssh $AZURE_SSH_USER@$AZURE_SSH_HOST "wp search-replace 'http://grassrootsfdn.local/' 'https://grf-headless-fbeeesahfucac3a9.westus2-01.azurewebsites.net/' --path=$REMOTE_WP_PATH --allow-root"
+ssh "$AZURE_SSH_USER@$AZURE_SSH_HOST" <<EOF
+wp search-replace 'http://grassrootsfdn.local/' 'https://grf-headless-fbeeesahfucac3a9.westus2-01.azurewebsites.net/' \
+    --path=/site/wwwroot --allow-root
+EOF
+if [[ $? -ne 0 ]]; then
+  echo "Failed to update URLs in the database."
+  exit 1
+fi
 
 # Step 5: Cleanup
 echo "Cleaning up dump file..."
-ssh $AZURE_SSH_USER@$AZURE_SSH_HOST "rm $REMOTE_WP_PATH/$DUMP_FILE"
-rm $DUMP_FILE
+curl -X DELETE \
+     -u "$AZURE_SSH_USER:$AZURE_SSH_PASS" \
+     "https://$AZURE_SSH_HOST/api/vfs/site/wwwroot/db-sync.sql"
+rm -f "$DUMP_FILE"
 
 echo "Database sync completed successfully!"

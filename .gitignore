@@ -8,3 +8,4 @@
 /themes/blocksy
 /themes/twenty*
 .DS_Store
+.env
