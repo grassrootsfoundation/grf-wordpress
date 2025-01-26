@@ -1,0 +1,33 @@
+name: Sync Database to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-database:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run Database Sync Script
+        env:
+          LOCAL_DB_NAME: ${{ secrets.LOCAL_DB_NAME }}
+          LOCAL_DB_USER: ${{ secrets.LOCAL_DB_USER }}
+          LOCAL_DB_PASS: ${{ secrets.LOCAL_DB_PASS }}
+          AZURE_DB_HOST: ${{ secrets.AZURE_DB_HOST }}
+          AZURE_DB_NAME: ${{ secrets.AZURE_DB_NAME }}
+          AZURE_DB_USER: ${{ secrets.AZURE_DB_USER }}
+          AZURE_DB_PASS: ${{ secrets.AZURE_DB_PASS }}
+          AZURE_SSH_USER: ${{ secrets.AZURE_SSH_USER }}
+          AZURE_SSH_HOST: ${{ secrets.AZURE_SSH_HOST }}
+          REMOTE_WP_PATH: ${{ secrets.REMOTE_WP_PATH }}
+        run: bash scripts/sync-db.sh
