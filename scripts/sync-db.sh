@@ -11,10 +11,11 @@ AZURE_DB_NAME="grfheadles-c5b4b4cacb-privatelink"
 AZURE_DB_USER="bsraawezfi"
 AZURE_DB_PASS="csBCtGbt0dX6wmh7KNchPlDfNSprw3grvHHf9WpNSfS93Hgtg8g3LPgitfxz"
 AZURE_SSH_USER="kudu_ssh_user"
-AZURE_SSH_HOST="https://grf-headless-fbeeesahfucac3a9.westus2-01.azurewebsites.net/"
+AZURE_SSH_HOST="https://grf-headless-fbeeesahfucac3a9.westus2-01.azurewebsites.net"
 REMOTE_WP_PATH="waws-prod-mwh-125.ftp.azurewebsites.windows.net/site/wwwroot"
 
-DUMP_FILE="db-sync.sql"
+DUMP_FILE="/tmp/db-sync.sql"
+LOCAL_DUMP_FILE="db-sync.sql"
 
 # Step 1: Export the local database
 echo "Exporting local database..."
