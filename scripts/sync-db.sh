@@ -6,6 +6,11 @@ if [ -f .env ]; then
   export $(cat .env | xargs)
 fi
 
+
+# Define variables
+DUMP_FILE="/tmp/db-sync.sql"
+LOCAL_DUMP_FILE="db-sync.sql"
+
 # Step 1: Export the local database
 echo "Exporting local database..."
 mysqldump -h "$LOCAL_DB_HOST" -u "$LOCAL_DB_USER" -p"$LOCAL_DB_PASS" "$LOCAL_DB_NAME" > "$DUMP_FILE"
