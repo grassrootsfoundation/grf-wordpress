@@ -11,6 +11,13 @@ fi
 DUMP_FILE="/tmp/db-sync.sql"
 LOCAL_DUMP_FILE="db-sync.sql"
 
+# Step 0: Test database connection
+echo "Testing MySQL connection..."
+mysqladmin ping -h "$LOCAL_DB_HOST" -u "$LOCAL_DB_USER" -p"$LOCAL_DB_PASS" || {
+  echo "Failed to connect to the local database. Check your credentials and database host."
+  exit 1
+}
+
 # Step 1: Export the local database
 echo "Exporting local database..."
 mysqldump -h "$LOCAL_DB_HOST" -u "$LOCAL_DB_USER" -p"$LOCAL_DB_PASS" "$LOCAL_DB_NAME" > "$DUMP_FILE"
