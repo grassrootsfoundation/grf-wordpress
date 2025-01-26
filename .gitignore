@@ -2,6 +2,7 @@
 /upgrade
 /upgrade-temp-backup
 /upgrade-temp-backup
+/plugins
 /debug.log
 /index.php
 /themes/twenty*
